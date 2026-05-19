@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bingo × 嘀嗒清单 集成报告</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f5f5f7;
+    color: #1d1d1f;
+    line-height: 1.6;
+    padding: 40px 20px;
+  }
+  
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  
+  .header .badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 16px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  
+  .header h1 {
+    font-size: 36px;
+    font-weight: 700;
+    color: #1d1d1f;
+    margin-bottom: 12px;
+  }
+  
+  .header .subtitle {
+    font-size: 16px;
+    color: #86868b;
+  }
+  
+  .header .date {
+    font-size: 13px;
+    color: #aaa;
+    margin-top: 8px;
+  }
+  
+  /* Divider */
+  .divider {
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 2px;
+    margin: 0 auto 40px;
+  }
+  
+  /* Cards */
+  .card {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  
+  .card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1d1d1f;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .card-title .icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+  
+  .icon-purple { background: #f3e8ff; }
+  .icon-red { background: #fee2e2; }
+  .icon-green { background: #dcfce7; }
+  .icon-blue { background: #dbeafe; }
+  
+  /* Timeline */
+  .timeline {
+    position: relative;
+    padding-left: 24px;
+  }
+  
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: #e5e7eb;
+  }
+  
+  .timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+  }
+  
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -22px;
+    top: 8px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #667eea;
+    border: 2px solid white;
+  }
+  
+  .timeline-item.failed::before {
+    background: #ef4444;
+  }
+  
+  .timeline-item.success::before {
+    background: #22c55e;
+  }
+  
+  .timeline-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1d1d1f;
+    margin-bottom: 4px;
+  }
+  
+  .timeline-desc {
+    font-size: 13px;
+    color: #6b7280;
+  }
+  
+  .timeline-tag {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-top: 6px;
+  }
+  
+  .tag-fail { background: #fee2e2; color: #dc2626; }
+  .tag-ok { background: #dcfce7; color: #16a34a; }
+  
+  /* Solution */
+  .solution-box {
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 24px;
+  }
+  
+  .solution-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #16a34a;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .code-block {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    border-radius: 8px;
+    padding: 16px;
+    font-family: "SF Mono", "Fira Code", monospace;
+    font-size: 12px;
+    margin-top: 12px;
+    overflow-x: auto;
+  }
+  
+  .code-block .comment { color: #6c7086; }
+  .code-block .func { color: #89b4fa; }
+  .code-block .cmd { color: #a6e3a1; }
+  
+  /* Result */
+  .result-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  
+  .result-item {
+    background: #f9fafb;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .result-emoji {
+    font-size: 32px;
+    margin-bottom: 8px;
+  }
+  
+  .result-label {
+    font-size: 13px;
+    color: #6b7280;
+  }
+  
+  /* Summary */
+  .summary-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    padding: 32px;
+    color: white;
+    text-align: center;
+  }
+  
+  .summary-card h2 {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  
+  .summary-card p {
+    font-size: 14px;
+    opacity: 0.9;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  
+  .summary-card .big-number {
+    font-size: 48px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="badge">Bingo × 嘀嗒清单</div>
+    <h1>飞书任务自动同步集成报告</h1>
+    <p class="subtitle">让 AI 在飞书里创建的任务直接写入嘀嗒清单</p>
+    <p class="date">报告日期：2026年5月19日 &nbsp;|&nbsp; 执行人：Bingo 🐟</p>
+  </div>
+  
+  <div class="divider"></div>
+  
+  <!-- 背景 -->
+  <div class="card">
+    <div class="card-title">
+      <span class="icon icon-purple">📋</span>
+      项目背景
+    </div>
+    <p style="font-size:14px;color:#4b5563;line-height:1.8;">
+      千广传媒日常工作繁忙，需要在飞书里快速创建任务并同步到<strong>嘀嗒清单</strong>进行时间管理。之前 AI 只能在 <strong>Apple Reminders</strong> 创建任务，无法满足使用嘀嗒清单的需求。
+    </p>
+  </div>
+  
+  <!-- 尝试过的方案 -->
+  <div class="card">
+    <div class="card-title">
+      <span class="icon icon-red">🔧</span>
+      尝试过的方案（均未成功）
+    </div>
+    <div class="timeline">
+      <div class="timeline-item failed">
+        <div class="timeline-title">禁用 apple-reminders 技能</div>
+        <div class="timeline-desc">在 OpenClaw gateway config 里将 apple-reminders 设为 enabled: false</div>
+        <span class="timeline-tag tag-fail">失败 · 内置技能不受 config 控制</span>
+      </div>
+      <div class="timeline-item failed">
+        <div class="timeline-title">提升 ticktick-applescript 优先级</div>
+        <div class="timeline-desc">设置 order:1 最高优先级，设为默认技能</div>
+        <span class="timeline-tag tag-fail">失败 · 模型仍选择 apple-reminders</span>
+      </div>
+      <div class="timeline-item failed">
+        <div class="timeline-title">强化 ticktick-applescript SKILL.md 规则</div>
+        <div class="timeline-desc">在技能文件里加入大量禁止规则和触发词</div>
+        <span class="timeline-tag tag-fail">失败 · 模型不遵守</span>
+      </div>
+      <div class="timeline-item failed">
+        <div class="timeline-title">AGENTS.md 工作区硬规则</div>
+        <div class="timeline-desc">在工作区规则里写明必须用 osascript + TickTick</div>
+        <span class="timeline-tag tag-fail">失败 · 模型知道规则但仍选错</span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 最终解决方案 -->
+  <div class="card">
+    <div class="card-title">
+      <span class="icon icon-green">✅</span>
+      最终解决方案：命令拦截
+    </div>
+    <div class="solution-box">
+      <div class="solution-title">
+        <span>💡</span> 核心思路：不阻止 AI 选择，而是拦截执行
+      </div>
+      <p style="font-size:13px;color:#4b5563;margin-bottom:12px;">
+        AI 坚持调用 <code style="background:#f3f4f6;padding:2px 6px;border-radius:4px;">remindctl add</code>，于是<strong>在 shell 层面拦截</strong>这个命令，自动转发给 TickTick。整个过程对 AI 透明，它完全不知道底层已经替换。
+      </p>
+      <div class="code-block">
+<span class="comment"># ~/.zshenv — 命令拦截器核心</span>
+<span class="func">remindctl</span>() {
+  <span class="func">local</span> REAL=<span class="cmd">"/opt/homebrew/bin/remindctl"</span>
+  <span class="func">if</span> [[ <span class="cmd">"$1"</span> == <span class="cmd">"add"</span> ]] && [[ $# -ge 2 ]]; <span class="func">then</span>
+    <span class="comment"># 解析参数，转发给 TickTick</span>
+    osascript -e <span class="cmd">"tell application \"TickTick\" to add task given title:\"$TITLE\", due date:\"$TDUE\", priority:3"</span>
+    <span class="func">echo</span> <span class="cmd">"✓ $TITLE [嘀嗒清单] — 已创建"</span>
+  <span class="func">else</span>
+    $REAL <span class="cmd">"$@"</span>
+  <span class="func">fi</span>
+}
+      </div>
+    </div>
+  </div>
+  
+  <!-- 成果 -->
+  <div class="card">
+    <div class="card-title">
+      <span class="icon icon-blue">🎯</span>
+      集成成果
+    </div>
+    <div class="result-grid">
+      <div class="result-item">
+        <div class="result-emoji">💬</div>
+        <div class="result-label">飞书说"创建任务" → 自动进嘀嗒清单</div>
+      </div>
+      <div class="result-item">
+        <div class="result-emoji">🔍</div>
+        <div class="result-label">随时查询今天/明天的任务安排</div>
+      </div>
+      <div class="result-item">
+        <div class="result-emoji">🔔</div>
+        <div class="result-label">嘀嗒清单自带提醒通知功能</div>
+      </div>
+      <div class="result-item">
+        <div class="result-emoji">📱</div>
+        <div class="result-label">手机电脑同步，多设备管理</div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 总结 -->
+  <div class="summary-card">
+    <div class="big-number">✅</div>
+    <h2>集成完成，运行稳定</h2>
+    <p>以后在飞书里直接说"创建任务 XXX 明天下午 3 点"，任务就会自动出现在嘀嗒清单的今天列表里。</p>
+  </div>
+
+</div>
+</body>
+</html>
